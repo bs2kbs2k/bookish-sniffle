@@ -8,11 +8,12 @@ export async function onRequestGet(context) {
       next, // used for middleware or to fetch assets
       data, // arbitrary space for passing data between middlewares
     } = context;
+    const prefix = request.url.replace("index.pck", "");
 
-    let splits: Array<string> = await (await env.ASSETS.fetch("index.pck.json")).json();
+    let splits: Array<string> = await (await fetch(prefix + "index.pck.json")).json();
     let { readable, writable } = new TransformStream();
     for (const split of splits) {
-        let response = await env.ASSETS.fetch(split);
+        let response = await fetch(prefix + split);
         if (!response.ok) {
             return new Response("Could not fetch chunk", {status: 500});
         }
