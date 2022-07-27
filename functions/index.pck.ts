@@ -12,14 +12,15 @@ export async function onRequestGet(context) {
 
     let splits: Array<string> = await (await fetch(prefix + "index.pck.json")).json();
     let { readable, writable } = new TransformStream();
+    let promised = Promise.resolve();
     for (const split of splits) {
         let response = await fetch(prefix + split);
         if (!response.ok) {
             return new Response("Could not fetch chunk", {status: 500});
         }
-        await response.body.pipeTo(writable, {preventClose: true});
+        promised = promised.then(() => response.body.pipeTo(writable, {preventClose: true}));
     }
-    await writable.close();
+    waitUntil(promised.then(() => writable.close()));
   
     return new Response(readable);
   }
