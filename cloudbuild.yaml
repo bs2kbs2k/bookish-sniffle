@@ -1,0 +1,14 @@
+steps:
+  - name: 'europe-west2-docker.pkg.dev/titled-jam-team/titled-jam-team/godot_ci:4b5cdf8fb3ba77d4c0eba79a97b33241e5936d4c@sha256:fd39b67e093cfa50f3f8cad919d0d0e66d91c4513ef87af712b3bdde21654c8b'
+    args: ['bash', '-c', '
+      cd /workspace &&
+      mkdir -v -p build/${BRANCH_NAME}/web/ build/${BRANCH_NAME}/windows/ build/${BRANCH_NAME}/linux/ /builder/home/.local/share/godot/templates/3.4.4.stable/ &&
+      mv /root/.local/share/godot/templates/3.4.4.stable ~/.local/share/godot/templates/ &&
+      find ~ &&
+      godot -v --path /workspace --export "HTML5" /workspace/build/${BRANCH_NAME}/web/index.html &&
+      godot -v --path /workspace --export "Windows" /workspace/build/${BRANCH_NAME}/windows/game.exe &&
+      godot -v --path /workspace --export "Linux/X11" /workspace/build/${BRANCH_NAME}/linux/game.x86_64
+    ']
+  - name: 'gcr.io/cloud-builders/gsutil'
+    entrypoint: 'gsutil'
+    args: ['-h', 'Cache-Control:public, max-age=0', 'cp', '-r', '/workspace/build/${BRANCH_NAME}/**', 'gs://tjt-builds/${BRANCH_NAME}']
